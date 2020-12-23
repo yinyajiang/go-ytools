@@ -3,7 +3,8 @@ package tools
 import (
 	"fmt"
 	"path/filepath"
-	"tools/windows"
+
+	"github.com/yinyajiang/go-ytools/windows"
 )
 
 //DiskUsage 获取路径的磁盘信息
