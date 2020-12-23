@@ -1,4 +1,4 @@
-module tools
+module https://github.com/yinyajiang/go-ytools
 
 go 1.15
 
