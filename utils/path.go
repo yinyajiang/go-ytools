@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -244,5 +245,11 @@ func TempPath(path string) string {
 
 //DataPath 数据目录文件路径
 func DataPath(path string) string {
-	return AbsJoinPath(GetSpecialDir(LocalAppdata), "Library/Preferences", ProductName, path)
+	post := ""
+	if runtime.GOOS == "darwin" {
+		post = "Library/Preferences"
+	} else {
+
+	}
+	return AbsJoinPath(GetSpecialDir(LocalAppdata), post, GetProductName(), path)
 }

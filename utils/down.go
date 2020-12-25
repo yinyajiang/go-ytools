@@ -1,7 +1,9 @@
 package tools
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -55,4 +57,46 @@ func URLHeaderAttr(url, name string) string {
 		return ``
 	}
 	return resp.Header.Values(name)[0]
+}
+
+//GetNetContent ...
+func GetNetContent(url string) (ret []byte, e error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		e = err
+		return
+	}
+	defer resp.Body.Close()
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, resp.Body)
+	if err != nil {
+		e = err
+		return
+	}
+	ret = buf.Bytes()
+	return
+}
+
+//SendNetRequest ...
+func SendNetRequest(method, url string, head map[string]string, body io.Reader, recv io.Writer) (http.Header, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	for key, val := range head {
+		req.Header.Add(key, val)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if recv != nil {
+		_, err = io.Copy(recv, resp.Body)
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+	}
+	return resp.Header.Clone(), nil
 }

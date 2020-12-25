@@ -47,9 +47,19 @@ func mergeJSONMap(tomap map[string]interface{}, frommap map[string]interface{}) 
 
 //MergeJSON from合并json到to,以from为准
 func MergeJSON(to *js.Json, from *js.Json) {
-	frommap := from.MustMap()
-	tomap := to.MustMap()
-	mergeJSONMap(tomap, frommap)
+	totype := reflect.TypeOf(to.Interface())
+	fromtype := reflect.TypeOf(from.Interface())
+	if totype.Kind() != fromtype.Kind() {
+		return
+	}
+
+	switch totype.Kind() {
+	case reflect.Slice:
+		mergeJSONArray(to.MustArray(), from.MustArray())
+	case reflect.Map:
+		mergeJSONMap(to.MustMap(), from.MustMap())
+	}
+
 }
 
 //MergeFileJSON from合并json到to,以from为准
