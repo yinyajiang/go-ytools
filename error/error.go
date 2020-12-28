@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	js "github.com/bitly/go-simplejson"
 )
@@ -21,7 +22,8 @@ type Error interface {
 	Wraped() error
 	WrapedList() []error
 	Caller() []CallerInfo
-	CallerInfo() *js.Json
+	CallerInfoStr() string
+	CallerJSONInfo() *js.Json
 	private()
 }
 
@@ -45,10 +47,13 @@ func AddCodeTranslateMap(codeMsg map[int]string) {
 func GetCodeTranslate(code int) string {
 	msg, ok := _codeTranslate[code]
 	if !ok {
-		if code == 0 {
-			return "Successed"
+		msg, ok = codeTranslate[code]
+		if !ok {
+			if code == 0 {
+				return "Successed"
+			}
+			return "Unknow"
 		}
-		return "Unknow"
 	}
 	return msg
 }
@@ -183,7 +188,20 @@ func (p *_Error) Caller() []CallerInfo {
 	return p.callers
 }
 
-func (p *_Error) CallerInfo() *js.Json {
+func (p *_Error) CallerInfoStr() (ret string) {
+	first := true
+	for _, info := range p.callers {
+		if first {
+			first = false
+		} else {
+			ret += " => "
+		}
+		ret += "file:" + info.File + ",func:" + info.Fun + ",line:" + strconv.Itoa(info.Line)
+	}
+	return
+}
+
+func (p *_Error) CallerJSONInfo() *js.Json {
 	b, err := json.Marshal(p.callers)
 	if err != nil {
 		return nil
