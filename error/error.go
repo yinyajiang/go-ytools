@@ -97,6 +97,22 @@ func NewWithError(code int, err error) Error {
 
 }
 
+//NewWithErrorMsg ...
+func NewWithErrorMsg(code int, err error, msg string) Error {
+	if 0 == code {
+		return nil
+	}
+	if nil == err {
+		return New(code)
+	}
+	return &_Error{
+		code:    code,
+		err:     errors.New(msg + " | " + err.Error()),
+		callers: CallerList(1),
+	}
+
+}
+
 //NewF ...
 func NewF(code int, format string, v ...interface{}) Error {
 	if 0 == code {
