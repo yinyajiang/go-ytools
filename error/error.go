@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	js "github.com/bitly/go-simplejson"
 )
@@ -19,8 +20,6 @@ type Error interface {
 	error
 	fmt.Stringer
 	Code() int
-	Wraped() error
-	WrapedList() []error
 	Caller() []CallerInfo
 	CallerInfoStr() string
 	CallerJSONInfo() *js.Json
@@ -47,157 +46,61 @@ func AddCodeTranslateMap(codeMsg map[int]string) {
 func GetCodeTranslate(code int) string {
 	msg, ok := _codeTranslate[code]
 	if !ok {
-		msg, ok = codeTranslate[code]
-		if !ok {
-			if code == 0 {
-				return "Successed"
-			}
-			return "Unknow"
+		if code == 0 {
+			return "Successed"
 		}
+		return "Unknow"
 	}
 	return msg
 }
 
 //New ...
-func New(code int) Error {
-	if 0 == code {
+func New(e interface{}, v ...interface{}) Error {
+	if e == nil {
 		return nil
 	}
-	return &_Error{
-		code:    code,
-		callers: CallerList(1),
-	}
-}
-
-//NewWithMsg ...
-func NewWithMsg(code int, msg string) Error {
-	if 0 == code {
-		return nil
-	}
-	return &_Error{
-		code:    code,
-		err:     errors.New(msg),
-		callers: CallerList(1),
-	}
-}
-
-//NewWithError ...
-func NewWithError(code int, err error) Error {
-	if 0 == code {
-		return nil
-	}
-	if nil == err {
-		return New(code)
-	}
-	return &_Error{
-		code:    code,
-		err:     err,
-		callers: CallerList(1),
+	code := -1
+	var endmsg string
+	if c, ok := e.(int); ok {
+		code = c
+		if code == 0 {
+			return nil
+		}
+	} else if yerr, ok := e.(Error); ok {
+		code = yerr.Code()
+		endmsg = yerr.Error()
+	} else if err, ok := e.(error); ok {
+		code = -1
+		endmsg = err.Error()
+	} else {
+		code = -1
+		endmsg = fmt.Sprint(e)
 	}
 
-}
-
-//NewWithErrorMsg ...
-func NewWithErrorMsg(code int, err error, msg string) Error {
-	if 0 == code {
-		return nil
+	var msg string
+	if len(v) > 0 {
+		if fmat, ok := v[0].(string); ok && strings.HasPrefix(fmat, "format!") {
+			fmat := fmat[7:]
+			v = v[1:]
+			msg = fmt.Sprintf(fmat, v...)
+		} else {
+			msg = fmt.Sprint(v...)
+		}
 	}
-	if nil == err {
-		return New(code)
-	}
-	return &_Error{
-		code:    code,
-		err:     errors.New(msg + " | " + err.Error()),
-		callers: CallerList(1),
-	}
-
-}
-
-//NewF ...
-func NewF(code int, format string, v ...interface{}) Error {
-	if 0 == code {
-		return nil
-	}
-	return &_Error{
-		code:    code,
-		err:     fmt.Errorf(format, v...),
-		callers: CallerList(1),
-	}
-}
-
-//Wrap ...
-func Wrap(werr error, code int) Error {
-	if 0 == code {
-		return nil
-	}
-	return &_Error{
-		code:    code,
-		callers: CallerList(1),
-		wraped:  werr,
-	}
-}
-
-//WrapWithMsg ...
-func WrapWithMsg(werr error, code int, msg string) Error {
-	if 0 == code {
-		return nil
+	if len(msg) > 0 {
+		msg += "," + endmsg
+	} else {
+		msg = endmsg
 	}
 	return &_Error{
 		code:    code,
 		err:     errors.New(msg),
 		callers: CallerList(1),
-		wraped:  werr,
-	}
-}
-
-//WrapWithError ...
-func WrapWithError(werr error, code int, err error) Error {
-	if 0 == code {
-		return nil
-	}
-	if nil == err {
-		return Wrap(werr, code)
-	}
-	return &_Error{
-		code:    code,
-		err:     err,
-		callers: CallerList(1),
-		wraped:  werr,
-	}
-}
-
-//WrapF ...
-func WrapF(werr error, code int, format string, v ...interface{}) Error {
-	if 0 == code {
-		return nil
-	}
-	return &_Error{
-		code:    code,
-		err:     fmt.Errorf(format, v...),
-		callers: CallerList(1),
-		wraped:  werr,
 	}
 }
 
 func (p *_Error) Code() int {
 	return p.code
-}
-
-func (p *_Error) Wraped() error {
-	return p.wraped
-}
-
-func (p *_Error) WrapedList() (ret []error) {
-	last := p
-	for last != nil && nil != last.wraped {
-		ret = append(ret, last.wraped)
-		ok := false
-		last, ok = last.wraped.(*_Error)
-		if !ok {
-			break
-		}
-	}
-	return
 }
 
 func (p *_Error) Caller() []CallerInfo {
@@ -238,9 +141,6 @@ func (p *_Error) Error() string {
 
 func (p *_Error) String() (ret string) {
 	ret = p.Error()
-	for _, w := range p.WrapedList() {
-		ret += " <- " + w.Error()
-	}
 	return
 }
 

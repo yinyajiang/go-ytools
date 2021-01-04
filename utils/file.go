@@ -84,6 +84,12 @@ func OpenReadFile(path string) (*os.File, error) {
 	return file, err
 }
 
+//OpenApptendFile 追加方式打开或创建文件
+func OpenApptendFile(path string) (*os.File, error) {
+	CreateDirs(AbsParent(path))
+	return os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_RDONLY|os.O_CREATE, 0644)
+}
+
 //FileSize 文件大小
 func FileSize(path string) int64 {
 	info, err := os.Stat(path)

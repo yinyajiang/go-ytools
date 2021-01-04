@@ -8,6 +8,7 @@ import (
 
 	js "github.com/bitly/go-simplejson"
 	yerror "github.com/yinyajiang/go-ytools/error"
+	tools "github.com/yinyajiang/go-ytools/utils"
 )
 
 //Log ...
@@ -29,7 +30,7 @@ func newLog(file string) *Log {
 	l := new(Log)
 	var w io.Writer
 	if len(file) > 0 {
-		f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_RDONLY|os.O_CREATE, 0644)
+		f, err := tools.OpenApptendFile(file)
 		if err != nil {
 			fmt.Printf("Log create fail:%v\n", err)
 			w = os.Stdout
@@ -75,18 +76,46 @@ func (p *Log) StdPrint(v ...interface{}) {
 }
 
 //CodePrint ...
-func (p *Log) CodePrint(code int, msg string, data *js.Json) {
-	p.uiPrint(code, msg, data, true, "")
-}
+func (p *Log) CodePrint(e interface{}, v ...interface{}) {
+	var (
+		code     int
+		msg      string
+		data     *js.Json
+		callinfo string
+	)
+	if e == nil {
+		code = 0
+	} else if c, ok := e.(int); ok {
+		code = c
+		msg = yerror.GetCodeTranslate(c)
+	} else if yerr, ok := e.(yerror.Error); ok {
+		code = yerr.Code()
+		msg = yerr.Error()
+		callinfo = yerr.CallerInfoStr()
+	} else if err, ok := e.(error); ok {
+		code = -1
+		msg = err.Error()
+	} else {
+		code = -1
+		msg = fmt.Sprint(e)
+	}
 
-//ErrPrintWithData ...
-func (p *Log) ErrPrintWithData(err error, data *js.Json) {
-	p.uiErrPrint(err, data)
-}
+	vt := make([]interface{}, 0, len(v))
+	for _, i := range v {
+		if j, ok := i.(*js.Json); ok {
+			data = j
+		} else {
+			vt = append(vt, i)
+		}
+	}
+	if len(vt) > 0 {
+		if len(msg) > 0 {
+			msg += " | "
+		}
+		msg += fmt.Sprint(vt...)
+	}
+	p.codePrint(code, msg, data, true, callinfo)
 
-//ErrPrint ...
-func (p *Log) ErrPrint(err error) {
-	p.uiErrPrint(err, nil)
 }
 
 //ProgressPrint 标准输出进度相关信息
@@ -102,7 +131,7 @@ func (p *Log) ProgressPrint(progress float64, speed, size, transffred int, phase
 	data.Set("transffred", transffred)
 	data.Set("phase", phase)
 
-	p.uiPrint(1, "", data, false, "")
+	p.codePrint(1, "", data, false, "")
 
 	if progress == 0.0 {
 		p.print(otrace, "", "Progress begin")
@@ -111,12 +140,7 @@ func (p *Log) ProgressPrint(progress float64, speed, size, transffred int, phase
 	}
 }
 
-//PrintSuccess 打印成功信息
-func (p *Log) PrintSuccess() {
-	p.uiErrPrint(nil, nil)
-}
-
-func (p *Log) uiPrint(code int, msg string, data *js.Json, record bool, stack string) {
+func (p *Log) codePrint(code int, msg string, data *js.Json, record bool, stack string) {
 	//for ui
 	j := createJSONLog(code, msg, data)
 	b, _ := j.MarshalJSON()
@@ -140,27 +164,6 @@ func (p *Log) uiPrint(code int, msg string, data *js.Json, record bool, stack st
 		}
 
 	}
-}
-
-func (p *Log) uiErrPrint(err error, data *js.Json) {
-
-	if err == nil {
-		p.uiPrint(0, yerror.GetCodeTranslate(0), data, true, "")
-		return
-	}
-	stack := true
-	e, ok := err.(yerror.Error)
-	if !ok {
-		e = yerror.NewWithError(-1, err)
-		stack = false
-	}
-
-	if stack {
-		p.uiPrint(e.Code(), e.String(), data, true, e.CallerInfoStr())
-	} else {
-		p.uiPrint(e.Code(), e.String(), data, true, "")
-	}
-
 }
 
 //print ...
