@@ -118,6 +118,14 @@ func CmpDate(t1, t2 time.Time) int64 {
 	return tt1.Unix() - tt2.Unix()
 }
 
+//AddBodyPara ...
+func AddBodyPara(body *string, k string, v interface{}) {
+	if len(*body) > 0 {
+		*body += "&"
+	}
+	*body += k + "=" + fmt.Sprint(v)
+}
+
 func testValue(t *testing.T, got, want interface{}) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("expect:%v,got:%v", want, got)
