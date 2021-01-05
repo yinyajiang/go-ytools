@@ -247,9 +247,21 @@ func TempPath(path string) string {
 func DataPath(path string) string {
 	post := ""
 	if runtime.GOOS == "darwin" {
-		post = "Library/Preferences"
+		post = "Library/Containers"
 	} else {
 
 	}
 	return AbsJoinPath(GetSpecialDir(LocalAppdata), post, GetProductName(), path)
+}
+
+//PreferencesPath 数据目录文件路径
+func PreferencesPath(path string) string {
+	post := ""
+	end := ""
+	if runtime.GOOS == "darwin" {
+		post = "Library/Preferences"
+	} else {
+		end = "Preferences"
+	}
+	return AbsJoinPath(GetSpecialDir(LocalAppdata), post, GetProductName(), end, path)
 }
