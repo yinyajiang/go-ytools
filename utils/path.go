@@ -221,19 +221,24 @@ var (
 )
 
 var (
-	_fixpath string
+	_fixLocalPath string
+	_fixDataPath  string
 )
 
 //SetFixLocal ...
 func SetFixLocal(path string) {
-	_fixpath = path
+	_fixLocalPath = path
+}
 
+//SetFixDataPath ...
+func SetFixDataPath(path string) {
+	_fixDataPath = path
 }
 
 //LocalPath 当前程序文件路径
 func LocalPath(path string) string {
-	if len(_fixpath) > 0 {
-		return AbsJoinPath(_fixpath, path)
+	if len(_fixLocalPath) > 0 {
+		return AbsJoinPath(_fixLocalPath, path)
 	}
 	return AbsJoinPath(AbsParent(os.Args[0]), path)
 }
@@ -258,6 +263,10 @@ func TempPath(path string) string {
 
 //DataPath 数据目录文件路径
 func DataPath(path string) string {
+	if len(_fixDataPath) > 0 {
+		return AbsJoinPath(_fixDataPath, path)
+	}
+
 	post := ""
 	if runtime.GOOS == "darwin" {
 		post = "Library/Containers"
