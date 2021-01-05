@@ -227,6 +227,7 @@ var (
 //SetFixLocal ...
 func SetFixLocal(path string) {
 	_fixpath = path
+
 }
 
 //LocalPath 当前程序文件路径
