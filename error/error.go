@@ -1,13 +1,10 @@
 package yerror
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-
-	js "github.com/bitly/go-simplejson"
 )
 
 var (
@@ -22,7 +19,6 @@ type Error interface {
 	Code() int
 	Caller() []CallerInfo
 	CallerInfoStr() string
-	CallerJSONInfo() *js.Json
 	private()
 }
 
@@ -109,6 +105,7 @@ func (p *_Error) Caller() []CallerInfo {
 
 func (p *_Error) CallerInfoStr() (ret string) {
 	first := true
+	i := 0
 	for _, info := range p.callers {
 		if first {
 			first = false
@@ -116,20 +113,12 @@ func (p *_Error) CallerInfoStr() (ret string) {
 			ret += " => "
 		}
 		ret += "file:" + info.File + ",func:" + info.Fun + ",line:" + strconv.Itoa(info.Line)
+		i++
+		if i == 3 {
+			break
+		}
 	}
 	return
-}
-
-func (p *_Error) CallerJSONInfo() *js.Json {
-	b, err := json.Marshal(p.callers)
-	if err != nil {
-		return nil
-	}
-	j, err := js.NewJson(b)
-	if err != nil {
-		return nil
-	}
-	return j
 }
 
 func (p *_Error) Error() string {
