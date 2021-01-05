@@ -220,8 +220,20 @@ var (
 	LocalAppdata SpecialDirType = 0x001c
 )
 
+var (
+	_fixpath string
+)
+
+//SetFixLocal ...
+func SetFixLocal(path string) {
+	_fixpath = path
+}
+
 //LocalPath 当前程序文件路径
 func LocalPath(path string) string {
+	if len(_fixpath) > 0 {
+		return AbsJoinPath(_fixpath, path)
+	}
 	return AbsJoinPath(AbsParent(os.Args[0]), path)
 }
 
