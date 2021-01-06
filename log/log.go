@@ -11,22 +11,83 @@ import (
 	tools "github.com/yinyajiang/go-ytools/utils"
 )
 
+//Loger loger接口
+type Loger interface {
+
+	//DbgPrintf ...
+	DbgPrintf(format string, v ...interface{})
+
+	//DbgPrint ...
+	DbgPrint(v ...interface{})
+
+	//TracePrintf ...
+	TracePrintf(format string, v ...interface{})
+
+	//TracePrint ...
+	TracePrint(v ...interface{})
+
+	//StdPrintf ...
+	StdPrintf(format string, v ...interface{})
+
+	//StdPrint ...
+	StdPrint(v ...interface{})
+
+	//CodePrint ...
+	CodePrint(e interface{}, v ...interface{})
+
+	//ProgressPrint 标准输出进度相关信息
+	ProgressPrint(progress float64, speed, size, transffred int, phase string)
+}
+
+//New ...
+func New() Loger {
+	return newLoger("")
+}
+
+//NewWithFile ...
+func NewWithFile(file string) Loger {
+	return newLoger(file)
+}
+
+//NewNull ...
+func NewNull() Loger {
+	return &NullLog{}
+}
+
+//NullLog 空日志
+type NullLog struct {
+}
+
+//DbgPrintf ...
+func (p *NullLog) DbgPrintf(format string, v ...interface{}) {}
+
+//DbgPrint ...
+func (p *NullLog) DbgPrint(v ...interface{}) {}
+
+//TracePrintf ...
+func (p *NullLog) TracePrintf(format string, v ...interface{}) {}
+
+//TracePrint ...
+func (p *NullLog) TracePrint(v ...interface{}) {}
+
+//StdPrintf ...
+func (p *NullLog) StdPrintf(format string, v ...interface{}) {}
+
+//StdPrint ...
+func (p *NullLog) StdPrint(v ...interface{}) {}
+
+//CodePrint ...
+func (p *NullLog) CodePrint(e interface{}, v ...interface{}) {}
+
+//ProgressPrint 标准输出进度相关信息
+func (p *NullLog) ProgressPrint(progress float64, speed, size, transffred int, phase string) {}
+
 //Log ...
 type Log struct {
 	log.Logger
 }
 
-//New ...
-func New() *Log {
-	return newLog("")
-}
-
-//NewWithFile ...
-func NewWithFile(file string) *Log {
-	return newLog(file)
-}
-
-func newLog(file string) *Log {
+func newLoger(file string) *Log {
 	l := new(Log)
 	var w io.Writer
 	if len(file) > 0 {
@@ -150,13 +211,13 @@ func (p *Log) codePrint(code int, msg string, data *js.Json, record bool, stack 
 	if record {
 		if len(stack) > 0 {
 			if len(msg) > 0 {
-				p.print(otrace, "%s,code(%d),stack(%s)", msg, code, stack)
+				p.print(otrace, "%s & code(%d),stack(%s)", msg, code, stack)
 			} else {
 				p.print(otrace, "code(%d),stack(%s)", code, stack)
 			}
 		} else {
 			if len(msg) > 0 {
-				p.print(otrace, "%s,code(%d)", msg, code)
+				p.print(otrace, "%s & code(%d)", msg, code)
 			} else {
 				p.print(otrace, "code(%d)", code)
 			}

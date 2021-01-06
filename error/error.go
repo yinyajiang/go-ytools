@@ -83,9 +83,19 @@ func New(e interface{}, v ...interface{}) Error {
 			msg = fmt.Sprint(v...)
 		}
 	}
-	if len(msg) > 0 {
-		msg += "," + endmsg
-	} else {
+	if len(msg) > 0 && len(endmsg) > 0 {
+		rmsg := []rune(msg)
+		rend := []rune(endmsg)
+		i := rmsg[len(rmsg)-1]
+		j := rend[0]
+		if i != '.' && i != '。' && i != '，' && i != ',' &&
+			j != '.' && j != '。' && j != '，' && j != ',' {
+			msg += "," + endmsg
+		} else {
+			msg += endmsg
+		}
+
+	} else if len(endmsg) > 0 {
 		msg = endmsg
 	}
 	return &_Error{

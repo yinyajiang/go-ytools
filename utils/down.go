@@ -87,6 +87,7 @@ func SendNetRequest(method, url string, head map[string]string, body io.Reader, 
 	for key, val := range head {
 		req.Header.Add(key, val)
 	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
