@@ -258,7 +258,11 @@ func PostPath(full, src string) string {
 
 //TempPath 临时目录文件路径
 func TempPath(path string) string {
-	return AbsJoinPath(os.TempDir(), path)
+	if runtime.GOOS == "darwin" {
+		return AbsJoinPath(GetSpecialDir(LocalAppdata), "Library/Caches", GetProductName(), path)
+	}
+	return AbsJoinPath(os.TempDir(), GetProductName(), path)
+
 }
 
 //DataPath 数据目录文件路径
