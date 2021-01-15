@@ -1,7 +1,8 @@
-package mergejson
+package tools
 
 import (
 	"io"
+	"os"
 	"reflect"
 
 	js "github.com/bitly/go-simplejson"
@@ -83,4 +84,27 @@ func MergeFileJSON(to io.Reader, from io.Reader, result io.Writer) error {
 		return err
 	}
 	return nil
+}
+
+//OpenJSON ...
+func OpenJSON(path string) (*js.Json, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	return js.NewFromReader(file)
+}
+
+//CreateJSON 创建json节点
+func CreateJSON() *js.Json {
+	return js.New()
+}
+
+//MarshalToJSON ...
+func MarshalToJSON(path string, j *js.Json) error {
+	data, err := j.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	return WriteFileString(path, string(data))
 }

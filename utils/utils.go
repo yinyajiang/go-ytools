@@ -9,8 +9,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	js "github.com/bitly/go-simplejson"
 )
 
 //VersionSplit 拆分版本信息
@@ -52,29 +50,6 @@ func CmpVersion(str1 string, str2 string) int {
 		return -1
 	}
 	return 0
-}
-
-//OpenJSON ...
-func OpenJSON(path string) (*js.Json, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	return js.NewFromReader(file)
-}
-
-//CreateJSON 创建json节点
-func CreateJSON() *js.Json {
-	return js.New()
-}
-
-//MarshalToJSON ...
-func MarshalToJSON(path string, j *js.Json) error {
-	data, err := j.MarshalJSON()
-	if err != nil {
-		return err
-	}
-	return WriteFileString(path, string(data))
 }
 
 //IsInArray ...

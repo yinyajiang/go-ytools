@@ -1,7 +1,5 @@
 package tools
 
-import "github.com/yinyajiang/go-ytools/windows"
-
 //GetSysBit 获取当前位数
 func GetSysBit() int {
 	var si windows.SystemInfo
