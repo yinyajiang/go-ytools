@@ -263,10 +263,3 @@ func ReplaceFileTo(path string, m map[string]string, dst string) error {
 	strdata := ReplaceString(string(data), m)
 	return WriteFileString(dst, strdata)
 }
-
-//DiskStatus 磁盘信息
-type DiskStatus struct {
-	All  uint64
-	Used uint64
-	Free uint64
-}

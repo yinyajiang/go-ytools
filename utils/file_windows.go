@@ -2,34 +2,22 @@ package tools
 
 import (
 	"fmt"
-	"path/filepath"
 
-	"github.com/yinyajiang/go-ytools/windows"
+	"github.com/yinyajiang/go-w32/wutil"
 )
 
 //DiskUsage 获取路径的磁盘信息
-func DiskUsage(path string) (disk DiskStatus, err error) {
-	vol := filepath.VolumeName(AbsPath(path))
-	freeBytesAvailable, totalNumberOfBytes, totalNumberOfFreeBytes, errt := windows.GetDiskFreeSpaceEx(vol)
-
-	return DiskStatus{
-		All:  totalNumberOfBytes,
-		Used: totalNumberOfBytes - totalNumberOfFreeBytes,
-		Free: freeBytesAvailable,
-	}, errt
+func DiskUsage(path string) (disk wutil.DiskStatus, err error) {
+	usag, b := wutil.DiskUsage(path)
+	if !b {
+		err = fmt.Errorf("Get DiskUsage Fail")
+		return
+	}
+	disk = usag
+	return
 }
 
 //GetFileVersion 获取文件版本信息
 func GetFileVersion(file string) string {
-	data := windows.GetFileVersionInfo(file)
-	if len(data) == 0 {
-		return ""
-	}
-	fileInfo := windows.VerQueryValue(data)
-
-	ver := fmt.Sprintf("%d.%d.%d.%d", fileInfo.FileVersionMS>>16,
-		fileInfo.FileVersionMS&0xffff,
-		fileInfo.FileVersionLS>>16,
-		fileInfo.FileVersionLS&0xffff)
-	return ver
+	return wutil.GetFileVersion(file)
 }

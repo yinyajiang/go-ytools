@@ -19,8 +19,3 @@ func GetSpecialDir(t SpecialDirType) string {
 	}
 	return ""
 }
-
-//GetSysVersion 获取系统版本
-func GetSysVersion() string {
-	return ""
-}
