@@ -2,6 +2,13 @@ package tools
 
 import "syscall"
 
+//DiskStatus 磁盘信息
+type DiskStatus struct {
+	All  uint64
+	Used uint64
+	Free uint64
+}
+
 //DiskUsage 获取路径的磁盘信息
 func DiskUsage(path string) (disk DiskStatus, err error) {
 	fs := syscall.Statfs_t{}
