@@ -19,6 +19,9 @@ func ThePath(root string, path ...string) string {
 
 //AbsParent 绝对父路径
 func AbsParent(path string) string {
+	if len(path) == 0 {
+		return ""
+	}
 	return filepath.Dir(AbsPath(path))
 }
 
@@ -155,6 +158,9 @@ func FilterDeepFile(dirpath string, filter []string) []string {
 
 //IsInFilter 文件格式或名字是否在筛选器里面
 func IsInFilter(file string, filter []string) bool {
+	if len(filter) == 0 {
+		return true
+	}
 	file = PathName(file)
 	for _, pattern := range filter {
 		b, _ := filepath.Match(pattern, file)
@@ -194,7 +200,7 @@ func IsEqualPath(p1, p2 string) bool {
 	return p1 == p2
 }
 
-//PathWalk 遍历目录，回调带上去除根路径的name
+//PathWalk 递归遍历目录，回调带上去除根路径的name
 func PathWalk(path string, f func(p string, info os.FileInfo, postName string) error) {
 	pathlen := len(path)
 	filepath.Walk(path, func(fpath string, info os.FileInfo, err error) error {

@@ -243,7 +243,7 @@ func PathSize(path string) (size int64) {
 	return
 }
 
-//CopyDirFiles 拷贝目录中的文件到指定目录
+//CopyDirFiles 递归拷贝目录中的文件到指定目录
 func CopyDirFiles(src, dst string) {
 	PathWalk(src, func(path string, info os.FileInfo, postName string) error {
 		if !info.IsDir() {
