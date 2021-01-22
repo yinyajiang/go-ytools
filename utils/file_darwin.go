@@ -2,7 +2,7 @@ package tools
 
 import "syscall"
 
-//DiskStatus 磁盘信息
+//DiskStatus ...
 type DiskStatus struct {
 	All  uint64
 	Used uint64
