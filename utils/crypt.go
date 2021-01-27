@@ -2,7 +2,13 @@ package tools
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/md5"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -42,4 +48,123 @@ func EncodeBase64(data []byte) string {
 func DecodeBase64(base string) []byte {
 	dncoding, _ := base64.StdEncoding.DecodeString(base)
 	return dncoding
+}
+
+//GenAesKey ...
+func GenAesKey() []byte {
+	b := make([]byte, 24)
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+//GenAesIV ...
+func GenAesIV() []byte {
+	b := make([]byte, aes.BlockSize)
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+//AesEncrypt 加密
+func AesEncrypt(key, iv, src []byte) []byte {
+	ciph, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return nil
+	}
+
+	paddinglen := aes.BlockSize - (len(src) % aes.BlockSize)
+	for i := 0; i < paddinglen; i++ {
+		src = append(src, byte(paddinglen))
+	}
+	enbuf := make([]byte, len(src))
+	cbce := cipher.NewCBCEncrypter(ciph, []byte(iv))
+	cbce.CryptBlocks(enbuf, src)
+	return enbuf
+}
+
+//AesDecrypt 解密
+func AesDecrypt(key, iv, src []byte) []byte {
+	ciph, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return nil
+	}
+
+	debuf := make([]byte, len(src))
+	cbcd := cipher.NewCBCDecrypter(ciph, []byte(iv))
+	cbcd.CryptBlocks(debuf, src)
+	paddinglen := int(debuf[len(src)-1])
+	return debuf[:len(src)-paddinglen]
+}
+
+//GenRSAPair ...
+func GenRSAPair() (priv, pub []byte) {
+	private, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return
+	}
+	priv = x509.MarshalPKCS1PrivateKey(private)
+	pub, _ = x509.MarshalPKIXPublicKey(&private.PublicKey)
+	return
+}
+
+//GenSignVerifyPair ...
+func GenSignVerifyPair() (pass, iv, pri, pub string) {
+	pribin, pubbin := GenRSAPair()
+	keybin := GenAesKey()
+	ivbin := GenAesIV()
+	enpri := AesEncrypt(keybin, ivbin, pribin)
+	enpub := AesEncrypt(keybin, ivbin, pubbin)
+	pass = EncodeBase64(keybin)
+	iv = EncodeBase64(ivbin)
+	pri = EncodeBase64(enpri)
+	pub = EncodeBase64(enpub)
+	return
+}
+
+//Hash256 ...
+func Hash256(data []byte) []byte {
+	hashInstance := crypto.SHA256.New()
+	hashInstance.Write(data)
+	return hashInstance.Sum(nil)
+}
+
+//SignData 签名数据
+func SignData(data []byte, pass, iv, pri string) (sig string) {
+	passbin := DecodeBase64(pass)
+	ivbin := DecodeBase64(iv)
+	pribin := DecodeBase64(pri)
+	depri := AesDecrypt(passbin, ivbin, pribin)
+	priobj, err := x509.ParsePKCS1PrivateKey(depri)
+	if err != nil {
+		return ""
+	}
+	sigbin, err := rsa.SignPKCS1v15(rand.Reader, priobj, crypto.SHA256, Hash256(data))
+	if err != nil {
+		return ""
+	}
+	return EncodeBase64(sigbin)
+}
+
+//VerifyData 验证数据
+func VerifyData(data []byte, sig, pass, iv, pub string) bool {
+	passbin := DecodeBase64(pass)
+	ivbin := DecodeBase64(iv)
+	pubbin := DecodeBase64(pub)
+	depub := AesDecrypt(passbin, ivbin, pubbin)
+	sigbin := DecodeBase64(sig)
+	pubinter, err := x509.ParsePKIXPublicKey(depub)
+	pubobj := pubinter.(*rsa.PublicKey)
+	if err != nil {
+		return false
+	}
+	err = rsa.VerifyPKCS1v15(pubobj, crypto.SHA256, Hash256(data), sigbin)
+	if err != nil {
+		return false
+	}
+	return true
 }
