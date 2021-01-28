@@ -11,8 +11,8 @@ func StringToWCharPtr(str string) uintptr {
 	return uintptr(unsafe.Pointer(strp))
 }
 
-//WCharSplitToString ...
-func WCharSplitToString(buff []byte) string {
+//WCharByteToString windows
+func WCharByteToString(buff []byte) string {
 	u16 := (*[1 << 29]uint16)(unsafe.Pointer(&buff[0]))[0 : len(buff)/2 : len(buff)/2]
 	return syscall.UTF16ToString(u16)
 }
