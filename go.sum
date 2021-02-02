@@ -14,4 +14,6 @@ github.com/yinyajiang/go-w32 v0.0.0-20210118052316-4f5726ee0c25 h1:7C1so/jgbBKDm
 github.com/yinyajiang/go-w32 v0.0.0-20210118052316-4f5726ee0c25/go.mod h1:ckRiItESuJm4u2158HyuCR8pk3Bo5XutrKBRYqe+oGo=
 github.com/yinyajiang/go-w32 v0.0.0-20210118053727-3dc8b1641e87 h1:p8sVafCwC2iWNXqtp6mNFIUvAJcl8yM9+0rrINZ+xvw=
 github.com/yinyajiang/go-w32 v0.0.0-20210118053727-3dc8b1641e87/go.mod h1:ckRiItESuJm4u2158HyuCR8pk3Bo5XutrKBRYqe+oGo=
+github.com/yinyajiang/go-w32 v0.0.0-20210126054714-76b15cab1cef h1:Wgmfcw2Mxhx8mkVH5ZccYcAjnoWFkXH1OId+pN8MoZk=
+github.com/yinyajiang/go-w32 v0.0.0-20210126054714-76b15cab1cef/go.mod h1:2/GvV9LT6cSTA1wVFlwxqPMlQMUtZKdJYbkpujT9hNc=
 github.com/yinyajiang/go-ytools v0.1.2/go.mod h1:uP9Poe3VDX5KZKyZmgJ1JPKjviit8otKHicfzsEI9kQ=
