@@ -2,6 +2,7 @@ package tools
 
 import (
 	js "github.com/bitly/go-simplejson"
+	"gopkg.in/ini.v1"
 )
 
 var (
@@ -40,4 +41,13 @@ func GetProductName() (product string) {
 		product = _ProductName
 	}
 	return
+}
+
+//ParseIniString ....
+func ParseIniString(key, def, session, file string) string {
+	cfg, err := ini.Load(file)
+	if err != nil {
+		return def
+	}
+	return cfg.Section(session).Key(key).String()
 }
