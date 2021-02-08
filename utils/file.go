@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -45,12 +46,12 @@ func CreateFile(path string) (*os.File, error) {
 }
 
 //CopyFile 拷贝文件
-func CopyFile(src string, dst string) error {
-	return CopyFileFun(src, dst, nil)
+func CopyFile(ctx context.Context, src string, dst string) error {
+	return CopyFileFun(ctx, src, dst, nil)
 }
 
 //CopyFileFun 拷贝文件带回调
-func CopyFileFun(src string, dst string, progf func(int64, float64)) error {
+func CopyFileFun(ctx context.Context, src string, dst string, progf func(int64, float64)) error {
 	size := FileSize(src)
 	filesrc, err := OpenReadFile(src)
 	if err != nil {
@@ -62,7 +63,7 @@ func CopyFileFun(src string, dst string, progf func(int64, float64)) error {
 		return err
 	}
 	defer filedst.Close()
-	_, err = CopyFun(size, filedst, filesrc, progf)
+	_, err = CopyFun(ctx, size, filedst, filesrc, progf)
 	return err
 }
 
@@ -244,10 +245,10 @@ func PathSize(path string) (size int64) {
 }
 
 //CopyDirFiles 递归拷贝目录中的文件到指定目录
-func CopyDirFiles(src, dst string) {
+func CopyDirFiles(ctx context.Context, src, dst string) {
 	PathWalk(src, func(path string, info os.FileInfo, postName string) error {
 		if !info.IsDir() {
-			CopyFile(path, AbsJoinPath(dst, postName))
+			CopyFile(ctx, path, AbsJoinPath(dst, postName))
 		}
 		return nil
 	})

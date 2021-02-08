@@ -2,19 +2,20 @@ package tools
 
 import (
 	"archive/zip"
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 //CompressPath 压缩
-func CompressPath(srcFile string, destZip string) error {
-	return CompressPathFun(srcFile, destZip, nil)
+func CompressPath(ctx context.Context, srcFile string, destZip string) error {
+	return CompressPathFun(ctx, srcFile, destZip, nil)
 }
 
 //DeCompress 解压
-func DeCompress(zipFile, dest string) error {
-	return DeCompressFun(zipFile, dest, nil)
+func DeCompress(ctx context.Context, zipFile, dest string) error {
+	return DeCompressFun(ctx, zipFile, dest, nil)
 }
 
 //DecompressSize 解压大小
@@ -38,10 +39,10 @@ func DecompressSize(zipFile string) int64 {
 }
 
 //DeCompressFun 解压
-func DeCompressFun(zipFile, dest string, progHand ProgressHand) error {
+func DeCompressFun(ctx context.Context, zipFile, dest string, progHand ProgressHand) error {
 	zipFile = AbsPath(zipFile)
 	dest = AbsPath(dest)
-	mutilCopy := NewMutilCopyHander(DecompressSize(zipFile), progHand)
+	mutilCopy := NewMutilCopyHander(ctx, DecompressSize(zipFile), progHand)
 
 	reader, err := zip.OpenReader(zipFile)
 	if err != nil {
@@ -80,10 +81,10 @@ func DeCompressFun(zipFile, dest string, progHand ProgressHand) error {
 }
 
 //CompressPathFun 压缩
-func CompressPathFun(srcFile, destZip string, progHand ProgressHand) error {
+func CompressPathFun(ctx context.Context, srcFile, destZip string, progHand ProgressHand) error {
 	srcFile = AbsPath(srcFile)
 	destZip = AbsPath(destZip)
-	mutilCopy := NewMutilCopyHander(PathSize(srcFile), progHand)
+	mutilCopy := NewMutilCopyHander(ctx, PathSize(srcFile), progHand)
 
 	zipfile, err := CreateFile(destZip)
 	if err != nil {

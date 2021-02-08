@@ -2,6 +2,7 @@ package tools
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,12 +11,12 @@ import (
 )
 
 //DownFile 下载文件
-func DownFile(url, path string) error {
-	return DownFileFun(url, path, nil)
+func DownFile(ctx context.Context, url, path string) error {
+	return DownFileFun(ctx, url, path, nil)
 }
 
 //DownFileFun 下载文件
-func DownFileFun(url, path string, progHand ProgressHand) error {
+func DownFileFun(ctx context.Context, url, path string, progHand ProgressHand) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("Get url fail,url:%s,err:%v", url, err)
@@ -32,7 +33,7 @@ func DownFileFun(url, path string, progHand ProgressHand) error {
 		return err
 	}
 	defer file.Close()
-	_, err = CopyFun(fsize, file, resp.Body, progHand)
+	_, err = CopyFun(ctx, fsize, file, resp.Body, progHand)
 	if err != nil {
 		os.Remove(path)
 		return fmt.Errorf("Copy body fail,url:%s,err:%v", url, err)

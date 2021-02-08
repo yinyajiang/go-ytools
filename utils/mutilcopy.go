@@ -1,6 +1,10 @@
 package tools
 
-import "io"
+import (
+	"context"
+	"fmt"
+	"io"
+)
 
 //ProgressHand 进度回调
 type ProgressHand func(int64, float64)
@@ -10,14 +14,16 @@ type MutilCopyhander struct {
 	TotalSize int64
 	Copyed    int64
 	ProgHand  ProgressHand
+	ctx       context.Context
 }
 
 //NewMutilCopyHander MutilCopyhander
-func NewMutilCopyHander(totalSize int64, progHand ProgressHand) *MutilCopyhander {
+func NewMutilCopyHander(ctx context.Context, totalSize int64, progHand ProgressHand) *MutilCopyhander {
 	return &MutilCopyhander{
 		TotalSize: totalSize,
 		ProgHand:  progHand,
 		Copyed:    0,
+		ctx:       ctx,
 	}
 }
 
@@ -28,6 +34,15 @@ func (c *MutilCopyhander) Copy(writer io.Writer, reader io.Reader) (timeWritenAl
 	}
 
 	for c.TotalSize != c.Copyed {
+		if c.ctx != nil {
+			select {
+			case <-c.ctx.Done():
+				err = fmt.Errorf("Cancle Copy")
+				return
+			default:
+			}
+		}
+
 		write := c.TotalSize - c.Copyed
 		if write > 1024*1024 {
 			write = 1024 * 1024
@@ -48,7 +63,7 @@ func (c *MutilCopyhander) Copy(writer io.Writer, reader io.Reader) (timeWritenAl
 }
 
 //CopyFun 带回调的copy
-func CopyFun(size int64, writer io.Writer, reader io.Reader, progf ProgressHand) (writen int64, err error) {
-	mutilCopy := NewMutilCopyHander(size, progf)
+func CopyFun(ctx context.Context, size int64, writer io.Writer, reader io.Reader, progf ProgressHand) (writen int64, err error) {
+	mutilCopy := NewMutilCopyHander(ctx, size, progf)
 	return mutilCopy.Copy(writer, reader)
 }
