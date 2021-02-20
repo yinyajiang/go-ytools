@@ -82,6 +82,11 @@ func RandNum() int64 {
 	return rand.Int63()
 }
 
+//RandNumN 随机数
+func RandNumN(n int64) int64 {
+	return rand.Int63n(n)
+}
+
 //CmpDate ...
 func CmpDate(t1, t2 time.Time) int64 {
 	y1, m1, d1 := t1.Date()
